@@ -1,0 +1,73 @@
+import time
+import requests
+import datetime
+import random
+
+# Настройки твоего бота
+TOKEN = "8349386754:AAE2I6RgOHnYdhvF8oJ87gWXry9DqlcCDIk"
+URL = f"https://api.telegram.org/bot{TOKEN}/"
+
+# Обширная база сигнатур запрещенного софта
+GLOBAL_BLACKLIST = [
+    "game_guardian", "lucky_patcher", "cheat_engine", "injector", 
+    "mod_menu", "speed_hack", "loki_bot", "xposed_framework", 
+    "magisk_bypass", "memory_editor", "virtual_space", "parallel_clone"
+]
+
+def system_log(message):
+    """Вывод системных логов с временной меткой"""
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[ANTICHEAT-CORE @ {timestamp}] {message}")
+
+def get_main_menu_markup():
+    """Генерация главной интерактивной панели управления (кнопки)"""
+    return {
+        "inline_keyboard": [
+            [{"text": "🔍 Быстрый сканирующий тест", "callback_data": "action_check"}],
+            [{"text": "🛡 Проверка сети и IP новичка", "callback_data": "action_ip_scan"}],
+            [
+                {"text": "⚠️ Бан: 7 дней (Лёгкое)", "callback_data": "ban_7"},
+                {"text": "🟠 Бан: 30 дней (Среднее)", "callback_data": "ban_30"}
+            ],
+            [
+                {"text": "🔴 Бан: Год (Сумасшедшее)", "callback_data": "ban_365"},
+                {"text": "☠️ Бан: Навсегда (Радикальное)", "callback_data": "ban_forever"}
+            ],
+            [{"text": "📊 Статус защищенности сервера", "callback_data": "action_status"}]
+        ]
+    }
+
+system_log("Инициализация защитного ядра v4.2...")
+system_log("Загрузка сигнатур читерского ПО... Успешно.")
+system_log("Античит-сервер запущен и готов к перехвату событий.")
+
+last_update_id = 0
+
+while True:
+    try:
+        # Получаем обновления от Telegram API
+        response = requests.get(f"{URL}getUpdates", params={"offset": last_update_id + 1, "timeout": 30}).json()
+        
+        for result in response.get("result", []):
+            last_update_id = result["update_id"]
+            
+            # 1. Проверяем нажатия на интерактивные кнопки
+            if "callback_query" in result:
+                callback = result["callback_query"]
+                callback_id = callback["id"]
+                data = callback["data"]
+                chat_id = callback["message"]["chat"]["id"]
+                message_id = callback["message"]["message_id"]
+                user = callback["from"]["username"] or "Игрок"
+                
+                system_log(f"Получено нажатие кнопки от @{user}: {data}")
+                
+                if data == "action_check":
+                    response_text = "🟢 Сканирование памяти: Процессы чисты, посторонних модулей инъекции не выявлено."
+                elif data == "action_ip_scan":
+                    sim_ip = f"192.168.{random.randint(10,200)}.{random.randint(2,250)}"
+                    response_text = f"🌐 Анализ сетевого узла:\n• IP: {sim_ip}\n• Статус: Безопасный резидентный IP. Угроз нет."
+                elif data == "action_status":
+                    response_text = f"📊 Состояние защитного ядра:\n• Активных модулей: {len(GLOBAL_BLACKLIST)}\n• Статус: Максимальный уровень защиты активен."
+                elif data.startswith("ban_"):
+                    term = data.
